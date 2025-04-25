@@ -18,10 +18,18 @@ const Login = () => {
 
     try {
       const { data } = await axios.post(endpoint, { email, password });
-      localStorage.setItem("token", data.token);
+
+      // Store token correctly based on role
+      const tokenKey = role === "admin" ? "adminToken" : "userToken";
+      localStorage.setItem(tokenKey, data.token);
+
+      console.log(`Stored ${tokenKey}:`, localStorage.getItem(tokenKey)); // Debugging log
+
+      // Navigate to the correct dashboard after login
       navigate(role === "admin" ? "/admin-dashboard" : "/dashboard");
     } catch (error) {
-      alert("Invalid credentials");
+      console.error("Login error:", error.response?.data || error.message);
+      alert("Invalid credentials. Please try again.");
     }
   };
 
