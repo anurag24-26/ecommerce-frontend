@@ -44,6 +44,31 @@ const AdminDashboard = () => {
     fetchData();
   }, []);
 
+  // Handle Image Upload
+  const handleImageUpload = async (e, isEditing = false) => {
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const { data } = await axios.post(
+        "https://ecommerce-backend-h0uj.onrender.com/api/upload",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      if (isEditing) {
+        setEditingProduct({ ...editingProduct, image: data.imageUrl });
+      } else {
+        setNewProduct({ ...newProduct, image: data.imageUrl });
+      }
+    } catch (error) {
+      alert("Failed to upload image.");
+    }
+  };
+
   // Handle New Product Creation
   const handleCreateProduct = async (e) => {
     e.preventDefault();
@@ -137,13 +162,18 @@ const AdminDashboard = () => {
         )}
 
         {/* New Product Form */}
-        <form onSubmit={handleCreateProduct} className="space-y-4">
+        <form
+          onSubmit={handleCreateProduct}
+          className="space-y-4 bg-white p-6 shadow-md rounded-md"
+        >
           <h3 className="text-2xl font-semibold mb-4 text-gray-800">
             Create New Product
           </h3>
+
+          {/* Product Name */}
           <input
             type="text"
-            placeholder="Name"
+            placeholder="Product Name"
             value={newProduct.name}
             onChange={(e) =>
               setNewProduct({ ...newProduct, name: e.target.value })
@@ -151,9 +181,11 @@ const AdminDashboard = () => {
             className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
             required
           />
+
+          {/* Product Price */}
           <input
             type="number"
-            placeholder="Price"
+            placeholder="Price ($)"
             value={newProduct.price}
             onChange={(e) =>
               setNewProduct({ ...newProduct, price: e.target.value })
@@ -161,16 +193,19 @@ const AdminDashboard = () => {
             className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
             required
           />
-          <input
-            type="text"
-            placeholder="Description"
+
+          {/* Product Description */}
+          <textarea
+            placeholder="Product Description"
             value={newProduct.description}
             onChange={(e) =>
               setNewProduct({ ...newProduct, description: e.target.value })
             }
-            className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 h-24"
             required
-          />
+          ></textarea>
+
+          {/* Brand */}
           <input
             type="text"
             placeholder="Brand"
@@ -181,6 +216,8 @@ const AdminDashboard = () => {
             className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
             required
           />
+
+          {/* Category */}
           <input
             type="text"
             placeholder="Category"
@@ -191,9 +228,11 @@ const AdminDashboard = () => {
             className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
             required
           />
+
+          {/* Count in Stock */}
           <input
             type="number"
-            placeholder="Count in Stock"
+            placeholder="Stock Quantity"
             value={newProduct.countInStock}
             onChange={(e) =>
               setNewProduct({ ...newProduct, countInStock: e.target.value })
@@ -201,6 +240,23 @@ const AdminDashboard = () => {
             className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
             required
           />
+
+          {/* Product Image Upload */}
+          <input
+            type="file"
+            onChange={(e) => handleImageUpload(e, false)}
+            className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+            required
+          />
+          {newProduct.image && (
+            <img
+              src={newProduct.image}
+              alt="Uploaded Preview"
+              className="w-32 h-32 object-cover mx-auto mt-4 rounded-md"
+            />
+          )}
+
+          {/* Submit Button */}
           <button
             type="submit"
             className="w-full bg-blue-500 text-white py-3 rounded-md hover:bg-blue-600 transition"
@@ -227,6 +283,13 @@ const AdminDashboard = () => {
                   <p className="text-sm text-gray-600">
                     {product.brand} | {product.category}
                   </p>
+                  {product.image && (
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-16 h-16 object-cover rounded-md"
+                    />
+                  )}
                 </div>
                 <div className="space-x-3">
                   <button
@@ -247,6 +310,33 @@ const AdminDashboard = () => {
           </ul>
         ) : (
           <p className="text-center text-gray-500">No products available</p>
+        )}
+
+        {/* Edit Product Form */}
+        {editingProduct && (
+          <form onSubmit={handleUpdateProduct} className="space-y-4 mt-6">
+            <h3 className="text-2xl font-semibold mb-4 text-gray-800">
+              Edit Product
+            </h3>
+            <input
+              type="file"
+              onChange={(e) => handleImageUpload(e, true)}
+              className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+            />
+            {editingProduct.image && (
+              <img
+                src={editingProduct.image}
+                alt="Uploaded Preview"
+                className="w-32 h-32 object-cover mx-auto mt-4 rounded-md"
+              />
+            )}
+            <button
+              type="submit"
+              className="w-full bg-blue-500 text-white py-3 rounded-md hover:bg-blue-600 transition"
+            >
+              Update Product
+            </button>
+          </form>
         )}
       </div>
     </div>
