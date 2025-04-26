@@ -22,9 +22,14 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 p-8">
+    <div className="relative min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 p-8 overflow-hidden">
+      {/* Blurred colorful background circles */}
+      <div className="absolute top-0 left-0 w-72 h-72 bg-pink-400 opacity-20 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-0 right-0 w-72 h-72 bg-yellow-400 opacity-20 rounded-full blur-3xl"></div>
+      <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-green-400 opacity-20 rounded-full blur-2xl"></div>
+
       {/* Header Section */}
-      <div className="flex justify-between items-center mb-8 text-white">
+      <div className="relative z-10 flex justify-between items-center mb-8 text-white">
         <h1 className="text-4xl font-bold">Featured Products</h1>
         <Link
           to="/dashboard"
@@ -35,7 +40,7 @@ const Home = () => {
       </div>
 
       {/* Product Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {loading ? (
           <p className="text-center text-white col-span-3 animate-pulse">
             Loading products...
@@ -47,7 +52,11 @@ const Home = () => {
               className="bg-white bg-opacity-90 backdrop-blur-md p-6 rounded-lg shadow-lg hover:shadow-xl transition"
             >
               <img
-                src={`https://ecommerce-backend-h0uj.onrender.com${product.image}`}
+                src={
+                  product.image?.startsWith("https")
+                    ? product.image
+                    : "https://via.placeholder.com/150"
+                }
                 alt={product.name}
                 className="w-full h-48 object-cover rounded-lg hover:scale-105 transition"
               />

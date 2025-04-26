@@ -68,20 +68,26 @@ const AdminDashboard = () => {
       alert("Failed to upload image.");
     }
   };
-
-  // Handle New Product Creation
   const handleCreateProduct = async (e) => {
     e.preventDefault();
+
+    const finalImage = newProduct.image || "default_image_url"; // Ensure a valid image is sent
+    setNewProduct({ ...newProduct, image: finalImage });
+
+    console.log("Creating product with image:", finalImage); // Debugging Log
+
     try {
       const { data } = await axios.post(
         "https://ecommerce-backend-h0uj.onrender.com/api/products",
-        newProduct,
+        { ...newProduct, image: finalImage },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
           },
         }
       );
+
+      console.log("Product created successfully:", data);
       alert("Product created successfully!");
       setProducts([...products, data]);
       setNewProduct({
@@ -94,6 +100,10 @@ const AdminDashboard = () => {
         countInStock: "",
       });
     } catch (error) {
+      console.error(
+        "Error creating product:",
+        error.response?.data || error.message
+      );
       alert("Failed to create product.");
     }
   };
