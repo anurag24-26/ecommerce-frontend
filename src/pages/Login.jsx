@@ -20,7 +20,7 @@ const Login = () => {
       const { data } = await axios.post(endpoint, { email, password });
       const tokenKey = role === "admin" ? "adminToken" : "userToken";
       localStorage.setItem(tokenKey, data.token);
-      navigate(role === "admin" ? "/admin-dashboard" : "/home");
+      navigate(role === "admin" ? "/admin-dashboard" : "/");
     } catch (error) {
       console.error("Login error:", error.response?.data || error.message);
       alert("Invalid credentials. Please try again.");

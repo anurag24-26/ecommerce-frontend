@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API from "../utils/api";
+import Navbar from "../components/Navbar";
 
 const Home = () => {
   const [products, setProducts] = useState([]);
@@ -22,65 +23,71 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 p-8 overflow-hidden">
-      {/* Blurred colorful background circles */}
-      <div className="absolute top-0 left-0 w-72 h-72 bg-pink-400 opacity-20 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 right-0 w-72 h-72 bg-yellow-400 opacity-20 rounded-full blur-3xl"></div>
-      <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-green-400 opacity-20 rounded-full blur-2xl"></div>
+    <>
+      <Navbar />
+      <div className="relative  min-h-screen bg-gradient-to-br from-indigo-600 to-cyan-500 p-8">
+        {/* Blurred Decorative Background */}
+        <div className="absolute inset-0 flex justify-center items-center">
+          <div className="w-96 h-96 bg-white opacity-30 blur-3xl rounded-full"></div>
+          <div className="w-72 h-72 bg-cyan-300 opacity-20 blur-2xl absolute top-20 right-40"></div>
+          <div className="w-64 h-64 bg-pink-400 opacity-20 blur-2xl absolute bottom-20 left-40"></div>
+        </div>
 
-      {/* Header Section */}
-      <div className="relative z-10 flex justify-between items-center mb-8 text-white">
-        <h1 className="text-4xl font-bold">Featured Products</h1>
-        <Link
-          to="/dashboard"
-          className="bg-white text-blue-600 px-5 py-2 rounded-md shadow-md hover:bg-gray-200 transition"
-        >
-          Go to Dashboard
-        </Link>
-      </div>
+        {/* Header Section */}
+        <div className="relative z-10 flex justify-between items-center mb-10 text-white">
+          <h1 className="text-5xl font-extrabold tracking-wide drop-shadow-lg">
+            ✨ Featured Products ✨
+          </h1>
+        </div>
 
-      {/* Product Grid */}
-      <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {loading ? (
-          <p className="text-center text-white col-span-3 animate-pulse">
-            Loading products...
-          </p>
-        ) : products.length > 0 ? (
-          products.map((product) => (
-            <div
-              key={product._id}
-              className="bg-white bg-opacity-90 backdrop-blur-md p-6 rounded-lg shadow-lg hover:shadow-xl transition"
-            >
-              <img
-                src={
-                  product.image?.startsWith("https")
-                    ? product.image
-                    : "https://via.placeholder.com/150"
-                }
-                alt={product.name}
-                className="w-full h-48 object-cover rounded-lg hover:scale-105 transition"
-              />
-              <h2 className="text-xl font-semibold mt-3 text-gray-800">
-                {product.name}
-              </h2>
-              <p className="text-gray-600">
-                {product.brand} | {product.category}
-              </p>
-              <p className="text-2xl font-bold text-blue-600">
-                ${product.price}
-              </p>
-              <button className="mt-4 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition">
-                Buy Now
-              </button>
-            </div>
-          ))
-        ) : (
-          <p className="text-center text-white col-span-3">
-            No products available
-          </p>
-        )}
+        {/* Product Grid */}
+        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
+          {loading ? (
+            <p className="text-center text-white col-span-3 animate-pulse text-lg">
+              🚀 Loading products...
+            </p>
+          ) : products.length > 0 ? (
+            products.map((product) => (
+              <div
+                key={product._id}
+                className="bg-white bg-opacity-90 backdrop-blur-lg p-6 rounded-xl shadow-lg hover:shadow-2xl transition transform hover:scale-105"
+              >
+                <div className="relative overflow-hidden rounded-lg">
+                  <img
+                    src={
+                      product.image?.startsWith("https")
+                        ? product.image
+                        : "https://via.placeholder.com/150"
+                    }
+                    alt={product.name}
+                    className="w-full h-52 object-cover rounded-md hover:scale-105 transition duration-300"
+                  />
+                  <div className="absolute top-2 left-2 bg-indigo-500 text-white px-3 py-1 text-sm rounded-full">
+                    New Arrival
+                  </div>
+                </div>
+                <h2 className="text-2xl font-bold mt-4 text-gray-800">
+                  {product.name}
+                </h2>
+                <p className="text-gray-500 text-sm">
+                  {product.brand} | {product.category}
+                </p>
+                <p className="text-3xl font-extrabold text-indigo-600 mt-2">
+                  ₹{product.price}
+                </p>
+                <button className="mt-6 w-full bg-indigo-600 text-white py-3 rounded-full font-semibold hover:bg-indigo-700 transition duration-300">
+                  🛒 Add to Cart
+                </button>
+              </div>
+            ))
+          ) : (
+            <p className="text-center text-white col-span-3 text-lg">
+              ❌ No products available
+            </p>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

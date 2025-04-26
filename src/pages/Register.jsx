@@ -120,7 +120,7 @@ const Register = () => {
         <p className="text-white text-center mt-6 text-sm">
           Already have an account?{" "}
           <Link
-            to="/"
+            to="/login"
             className="text-blue-300 font-semibold hover:underline hover:text-white"
           >
             Login here

@@ -87,7 +87,6 @@ const AdminDashboard = () => {
         }
       );
 
-      console.log("Product created successfully:", data);
       alert("Product created successfully!");
       setProducts([...products, data]);
       setNewProduct({

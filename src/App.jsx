@@ -8,9 +8,9 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/home" element={<Home />} />
         {/* Add a route for the admin dashboard */}
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/register" element={<Register />} />
