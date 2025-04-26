@@ -57,7 +57,7 @@ const Dashboard = () => {
       {/* Top Buttons */}
       <div className="flex gap-4 mb-6 relative z-10">
         <Link
-          to="/home"
+          to="/"
           className="bg-white text-blue-600 px-4 py-2 rounded-md shadow-md hover:bg-blue-100 transition"
         >
           View Products

@@ -5,12 +5,15 @@ import doodleImg from "../assets/doodle.svg"; // Add a doodle image inside /src/
 
 const Login = () => {
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user"); // Default role
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Start loading
+
     const endpoint =
       role === "admin"
         ? "https://ecommerce-backend-h0uj.onrender.com/api/admin/login"
@@ -99,9 +102,14 @@ const Login = () => {
           />
           <button
             type="submit"
-            className="w-full py-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg hover:shadow-2xl transition-all duration-300"
+            disabled={loading}
+            className={`w-full py-3 mt-2 ${
+              loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            } text-white font-bold rounded-full transition-all duration-300 shadow-md hover:shadow-xl`}
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 

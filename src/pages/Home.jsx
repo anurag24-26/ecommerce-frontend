@@ -25,7 +25,7 @@ const Home = () => {
   return (
     <>
       <Navbar />
-      <div className="relative  min-h-screen bg-gradient-to-br from-indigo-600 to-cyan-500 p-8">
+      <div className="relative min-h-screen bg-gradient-to-br from-indigo-600 to-cyan-500 p-8">
         {/* Blurred Decorative Background */}
         <div className="absolute inset-0 flex justify-center items-center">
           <div className="w-96 h-96 bg-white opacity-30 blur-3xl rounded-full"></div>
@@ -48,37 +48,33 @@ const Home = () => {
             </p>
           ) : products.length > 0 ? (
             products.map((product) => (
-              <div
-                key={product._id}
-                className="bg-white bg-opacity-90 backdrop-blur-lg p-6 rounded-xl shadow-lg hover:shadow-2xl transition transform hover:scale-105"
-              >
-                <div className="relative overflow-hidden rounded-lg">
-                  <img
-                    src={
-                      product.image?.startsWith("https")
-                        ? product.image
-                        : "https://via.placeholder.com/150"
-                    }
-                    alt={product.name}
-                    className="w-full h-52 object-cover rounded-md hover:scale-105 transition duration-300"
-                  />
-                  <div className="absolute top-2 left-2 bg-indigo-500 text-white px-3 py-1 text-sm rounded-full">
-                    New Arrival
+              <Link to={`/product/${product._id}`} key={product._id}>
+                <div className="bg-white bg-opacity-90 backdrop-blur-lg p-6 rounded-xl shadow-lg hover:shadow-2xl transition transform hover:scale-105 cursor-pointer">
+                  <div className="relative overflow-hidden rounded-lg">
+                    <img
+                      src={
+                        product.image?.startsWith("https")
+                          ? product.image
+                          : "https://via.placeholder.com/150"
+                      }
+                      alt={product.name}
+                      className="w-full h-52 object-cover rounded-md hover:scale-105 transition duration-300"
+                    />
+                    <div className="absolute top-2 left-2 bg-indigo-500 text-white px-3 py-1 text-sm rounded-full">
+                      New Arrival
+                    </div>
                   </div>
+                  <h2 className="text-2xl font-bold mt-4 text-gray-800">
+                    {product.name}
+                  </h2>
+                  <p className="text-gray-500 text-sm">
+                    {product.brand} | {product.category}
+                  </p>
+                  <p className="text-3xl font-extrabold text-indigo-600 mt-2">
+                    ₹{product.price}
+                  </p>
                 </div>
-                <h2 className="text-2xl font-bold mt-4 text-gray-800">
-                  {product.name}
-                </h2>
-                <p className="text-gray-500 text-sm">
-                  {product.brand} | {product.category}
-                </p>
-                <p className="text-3xl font-extrabold text-indigo-600 mt-2">
-                  ₹{product.price}
-                </p>
-                <button className="mt-6 w-full bg-indigo-600 text-white py-3 rounded-full font-semibold hover:bg-indigo-700 transition duration-300">
-                  🛒 Add to Cart
-                </button>
-              </div>
+              </Link>
             ))
           ) : (
             <p className="text-center text-white col-span-3 text-lg">
