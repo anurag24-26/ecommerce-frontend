@@ -7,11 +7,15 @@ const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const [role, setRole] = useState("user");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Start loading
+
     const endpoint =
       role === "admin"
         ? "https://ecommerce-backend-h0uj.onrender.com/api/admin/register"
@@ -23,6 +27,8 @@ const Register = () => {
       navigate("/");
     } catch (error) {
       alert("Registration failed");
+    } finally {
+      setLoading(false); // End loading
     }
   };
 
@@ -101,9 +107,14 @@ const Register = () => {
           />
           <button
             type="submit"
-            className="w-full py-3 mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full transition-all duration-300 shadow-md hover:shadow-xl"
+            disabled={loading}
+            className={`w-full py-3 mt-2 ${
+              loading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            } text-white font-bold rounded-full transition-all duration-300 shadow-md hover:shadow-xl`}
           >
-            Register
+            {loading ? "Registering..." : "Register"}
           </button>
         </form>
         <p className="text-white text-center mt-6 text-sm">
