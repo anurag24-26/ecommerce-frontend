@@ -4,45 +4,68 @@ import { Link } from "react-router-dom";
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProfile = async () => {
+      const token = localStorage.getItem("userToken");
+
+      if (!token) {
+        console.error("No user token found! Please login again.");
+        alert("No user token found! Please login again.");
+        setLoading(false);
+        return;
+      }
+
+      console.log("User Token Being Sent:", token);
+
       try {
         const { data } = await axios.get(
           "https://ecommerce-backend-h0uj.onrender.com/api/users/profile",
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         setUser(data);
       } catch (error) {
-        alert("Error fetching profile");
+        console.error(
+          "Error fetching user profile:",
+          error.response?.data || error.message
+        );
+        alert("Failed to fetch user profile. Try logging in again.");
+      } finally {
+        setLoading(false);
       }
     };
+
     fetchProfile();
   }, []);
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 p-6">
       <Link
         to="/home"
-        className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+        className="mb-6 bg-white text-blue-600 px-4 py-2 rounded-md shadow-md hover:bg-blue-100 transition"
       >
-        Products
+        View Products
       </Link>
-      <div className="w-full max-w-md p-6 bg-white shadow-md rounded-md">
-        <h2 className="text-2xl font-semibold text-center mb-4">
+
+      <div className="w-full max-w-md p-6 bg-white bg-opacity-90 backdrop-blur-md shadow-lg rounded-lg">
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
           User Dashboard
         </h2>
-        {user ? (
-          <div className="text-center space-y-2">
-            <p className="text-lg font-medium">Name: {user.name}</p>
-            <p className="text-lg font-medium">Email: {user.email}</p>
+
+        {loading ? (
+          <p className="text-center text-gray-600 animate-pulse">
+            Loading profile...
+          </p>
+        ) : user ? (
+          <div className="text-center space-y-4">
+            <p className="text-lg font-semibold text-gray-700">
+              👤 {user.name}
+            </p>
+            <p className="text-lg font-medium text-gray-700">📧 {user.email}</p>
           </div>
         ) : (
-          <p className="text-center">Loading profile...</p>
+          <p className="text-center text-red-500">Failed to load profile.</p>
         )}
       </div>
     </div>

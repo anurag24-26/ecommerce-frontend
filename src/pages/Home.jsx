@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom"; // Import for navigation
+import { Link } from "react-router-dom";
 import API from "../utils/api";
 
 const Home = () => {
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -11,7 +12,9 @@ const Home = () => {
         const res = await API.get("/products");
         setProducts(res.data);
       } catch (err) {
-        console.log(err);
+        console.error("Error fetching products:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -19,45 +22,53 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Products</h1>
-        {/* Link to User Dashboard */}
+    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 p-8">
+      {/* Header Section */}
+      <div className="flex justify-between items-center mb-8 text-white">
+        <h1 className="text-4xl font-bold">Featured Products</h1>
         <Link
           to="/dashboard"
-          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+          className="bg-white text-blue-600 px-5 py-2 rounded-md shadow-md hover:bg-gray-200 transition"
         >
           Go to Dashboard
         </Link>
       </div>
 
-      {/* Product List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products.length > 0 ? (
+      {/* Product Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {loading ? (
+          <p className="text-center text-white col-span-3 animate-pulse">
+            Loading products...
+          </p>
+        ) : products.length > 0 ? (
           products.map((product) => (
             <div
               key={product._id}
-              className="bg-white p-4 rounded-md shadow-md"
+              className="bg-white bg-opacity-90 backdrop-blur-md p-6 rounded-lg shadow-lg hover:shadow-xl transition"
             >
               <img
                 src={`https://ecommerce-backend-h0uj.onrender.com${product.image}`}
                 alt={product.name}
-                className="w-full h-40 object-cover rounded-md"
+                className="w-full h-48 object-cover rounded-lg hover:scale-105 transition"
               />
-              <h2 className="text-lg font-semibold mt-2">{product.name}</h2>
+              <h2 className="text-xl font-semibold mt-3 text-gray-800">
+                {product.name}
+              </h2>
               <p className="text-gray-600">
                 {product.brand} | {product.category}
               </p>
-              <p className="text-xl font-bold text-blue-600">
+              <p className="text-2xl font-bold text-blue-600">
                 ${product.price}
               </p>
-              <button className="mt-3 w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600">
+              <button className="mt-4 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition">
                 Buy Now
               </button>
             </div>
           ))
         ) : (
-          <p className="text-center col-span-3">No products available</p>
+          <p className="text-center text-white col-span-3">
+            No products available
+          </p>
         )}
       </div>
     </div>
