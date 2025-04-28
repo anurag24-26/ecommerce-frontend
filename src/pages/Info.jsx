@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import API from "../utils/api";
 import Navbar from "../components/Navbar";
+import CartButton from "../components/CartButton";
 
 const Info = () => {
-  const { id } = useParams(); // Get product ID from URL
+  const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedImage, setSelectedImage] = useState(""); // Selected image state
-  const [isZoomed, setIsZoomed] = useState(false); // Lightbox zoom state
+  const [selectedImage, setSelectedImage] = useState("");
+  const [isZoomed, setIsZoomed] = useState(false);
 
   useEffect(() => {
     const fetchProductDetails = async () => {
@@ -18,9 +19,7 @@ const Info = () => {
         setSelectedImage(
           res.data.image?.startsWith("https")
             ? res.data.image
-            : res.data.images?.length > 0
-            ? res.data.images[0]
-            : "https://via.placeholder.com/150"
+            : res.data.images?.[0] || "https://via.placeholder.com/150"
         );
       } catch (err) {
         console.error("Error fetching product details:", err);
@@ -28,58 +27,61 @@ const Info = () => {
         setLoading(false);
       }
     };
-
     fetchProductDetails();
   }, [id]);
 
   return (
     <>
       <Navbar />
-      <div className="relative min-h-screen bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-6 sm:p-12">
+      <div className="relative min-h-screen bg-gray-100 p-6 sm:p-12 flex items-center justify-center">
         {loading ? (
-          <p className="text-center text-white text-lg">Loading product details...</p>
+          <p className="text-center text-white text-xl animate-pulse">
+            Loading product...
+          </p>
         ) : product ? (
-          <div className="flex flex-col sm:flex-row items-center bg-white p-8 rounded-xl shadow-lg mx-auto max-w-6xl">
-            {/* Left Column: Image Display */}
-            <div className="flex flex-col items-center sm:w-1/2">
+          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden max-w-6xl w-full flex flex-col md:flex-row">
+            {/* Product Image */}
+            <div className="md:w-1/2 p-6 flex flex-col items-center justify-center">
               <img
                 src={selectedImage}
                 alt={product.name}
-                className="w-full h-96 object-cover rounded-lg mb-4 cursor-pointer transition-transform duration-300 transform hover:scale-105"
-                onClick={() => setIsZoomed(true)} // Open zoom
+                className="w-full h-[400px] object-cover rounded-2xl cursor-pointer transition-all hover:scale-105"
+                onClick={() => setIsZoomed(true)}
               />
-
-              {/* Thumbnail Selection */}
-              <div className="flex gap-3 overflow-x-auto scrollbar-hide">
-                {product.images?.length > 1 ? (
-                  product.images.map((imgUrl, idx) => (
+              <div className="flex gap-3 mt-4 overflow-x-auto scrollbar-hide">
+                {product.images?.length > 0 &&
+                  product.images.map((img, i) => (
                     <img
-                      key={idx}
-                      src={imgUrl}
-                      alt={`Preview ${idx}`}
-                      className="w-16 h-16 object-cover rounded-md cursor-pointer border border-gray-300 hover:border-indigo-600 transition-colors"
-                      onClick={() => setSelectedImage(imgUrl)}
+                      key={i}
+                      src={img}
+                      alt={`Thumbnail ${i}`}
+                      onClick={() => setSelectedImage(img)}
+                      className="w-16 h-16 rounded-lg object-cover cursor-pointer border-2 border-transparent hover:border-indigo-500 transition"
                     />
-                  ))
-                ) : (
-                  <img
-                    src={selectedImage} // Default single image
-                    alt="Single Image"
-                    className="w-16 h-16 object-cover rounded-md border border-gray-300"
-                  />
-                )}
+                  ))}
               </div>
             </div>
 
-            {/* Right Column: Product Details */}
-            <div className="sm:w-1/2 sm:pl-12 mt-6 sm:mt-0">
-              <h1 className="text-4xl font-semibold text-gray-800">{product.name}</h1>
-              <p className="text-lg text-gray-600 mt-2">{product.description}</p>
-              <p className="text-xl text-gray-700 mt-4">Brand: {product.brand}</p>
-              <p className="text-xl text-gray-700">Category: {product.category}</p>
-              <p className="text-3xl font-extrabold text-indigo-600 mt-6">₹{product.price}</p>
-
-              {/* Stock Status */}
+            {/* Product Details */}
+            <div className="md:w-1/2 p-8 flex flex-col justify-center">
+              <h1 className="text-4xl font-bold text-gray-800">
+                {product.name}
+              </h1>
+              <p className="text-gray-600 text-lg mt-2">
+                {product.description}
+              </p>
+              <div className="mt-4 space-y-2">
+                <p className="text-lg text-gray-700">
+                  <span className="font-semibold">Brand:</span> {product.brand}
+                </p>
+                <p className="text-lg text-gray-700">
+                  <span className="font-semibold">Category:</span>{" "}
+                  {product.category}
+                </p>
+              </div>
+              <p className="text-3xl text-indigo-600 font-extrabold mt-6">
+                ₹{product.price}
+              </p>
               <p
                 className={`text-lg font-semibold mt-3 ${
                   product.countInStock > 0 ? "text-green-600" : "text-red-500"
@@ -90,34 +92,43 @@ const Info = () => {
                   : "Out of Stock"}
               </p>
 
-              {/* Add to Cart Button */}
-              <button className="mt-6 w-full sm:w-72 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-all duration-300">
-                🛒 Add to Cart
-              </button>
+              <div className="flex flex-col sm:flex-row gap-4 mt-6">
+                <button
+                  onClick={() => alert("Order Now functionality coming soon!")}
+                  className="bg-green-500 mt-4 w-60 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition duration-300"
+                >
+                  🚀 Order Now
+                </button>
+                <CartButton product={product} />
+              </div>
             </div>
           </div>
         ) : (
-          <p className="text-center text-white text-lg">❌ Product not found</p>
+          <div className="text-white text-center">
+            <p className="text-2xl">❌ Product not found</p>
+          </div>
         )}
       </div>
 
-      {/* Lightbox / Fullscreen Image Zoom */}
+      {/* Zoom Modal */}
       {isZoomed && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
           onClick={() => setIsZoomed(false)}
         >
-          <img
-            src={selectedImage}
-            alt="Zoomed Product"
-            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-          />
-          <button
-            className="absolute top-5 right-5 text-white text-3xl"
-            onClick={() => setIsZoomed(false)}
-          >
-            ✖
-          </button>
+          <div className="relative">
+            <img
+              src={selectedImage}
+              alt="Zoomed view"
+              className="max-h-[90vh] max-w-full object-contain rounded-lg shadow-lg"
+            />
+            <button
+              className="absolute top-2 right-2 text-white text-4xl"
+              onClick={() => setIsZoomed(false)}
+            >
+              &times;
+            </button>
+          </div>
         </div>
       )}
     </>

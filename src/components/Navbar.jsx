@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FaUser,
   FaShoppingCart,
   FaSignInAlt,
   FaUserPlus,
   FaBars,
+  FaSearch,
 } from "react-icons/fa";
 import axios from "axios";
 import logo from "../assets/logo.png"; // Your logo image
@@ -13,6 +14,8 @@ import logo from "../assets/logo.png"; // Your logo image
 const Navbar = () => {
   const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios
@@ -21,81 +24,105 @@ const Navbar = () => {
           Authorization: `Bearer ${localStorage.getItem("userToken")}`,
         },
       })
-      .then((response) => {
-        setUser(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+      .then((response) => setUser(response.data))
+      .catch((error) => console.log(error));
   }, []);
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/search?query=${searchTerm}`);
+      setSearchTerm("");
+      setMenuOpen(false); // Close menu if mobile
+    }
+  };
+
   return (
-    <nav className="bg-gradient-to-r from-blue-500 to-indigo-600 shadow-md">
+    <nav className="bg-white shadow-md sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center p-4">
         {/* Logo */}
-        <Link to="/" className="flex items-center space-x-3">
+        <Link to="/" className="flex items-center gap-3">
           <img
             src={logo}
             alt="Logo"
-            className="w-10 h-10 rounded-full object-cover"
+            className="w-10 h-10 rounded-full border-1 object-cover"
           />
-          <span className="text-white text-2xl font-bold tracking-wide">
+          <span className="text-indigo-600 text-2xl font-bold tracking-wide">
             EShop
           </span>
         </Link>
 
+        {/* Search Bar */}
+        <form
+          onSubmit={handleSearch}
+          className="hidden md:flex items-center bg-gray-100 rounded-full px-4 py-2"
+        >
+          <input
+            type="text"
+            placeholder="Search products..."
+            className="bg-transparent focus:outline-none w-48 text-sm"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <button
+            type="submit"
+            className="text-indigo-600 hover:text-indigo-800"
+          >
+            <FaSearch />
+          </button>
+        </form>
+
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center space-x-8 text-white text-lg">
-          <Link to="/" className="hover:text-yellow-300 transition">
+        <div className="hidden md:flex items-center space-x-8 text-gray-700 text-lg">
+          <Link to="/" className="hover:text-indigo-600 transition">
             Home
           </Link>
-          <Link to="/shop" className="hover:text-yellow-300 transition">
+          <Link to="/shop" className="hover:text-indigo-600 transition">
             Shop
           </Link>
-          <Link to="/about" className="hover:text-yellow-300 transition">
+          <Link to="/about" className="hover:text-indigo-600 transition">
             About
           </Link>
-          <Link to="/contact" className="hover:text-yellow-300 transition">
+          <Link to="/contact" className="hover:text-indigo-600 transition">
             Contact
+          </Link>
+          <Link to="/cart" className="hover:text-indigo-600 transition">
+            <FaShoppingCart size={24} />
           </Link>
 
           {user ? (
             <div className="flex items-center space-x-3">
-              <span className="text-white">Hi, {user.name}</span>
+              <span className="text-gray-600 text-sm">Hi, {user.name}</span>
               <Link
                 to="/dashboard"
-                className="hover:text-yellow-300 transition"
+                className="hover:text-indigo-600 transition"
               >
                 <FaUser size={22} />
               </Link>
             </div>
           ) : (
-            <div className=" space-x-4">
+            <div className="flex items-center space-x-4">
               <Link
                 to="/login"
-                className="flex items-center hover:text-yellow-300 transition"
+                className="flex items-center hover:text-indigo-600 transition"
               >
                 <FaSignInAlt size={20} />
                 <span className="ml-2">Login</span>
               </Link>
               <Link
                 to="/register"
-                className="flex items-center hover:text-yellow-300 transition"
+                className="flex items-center hover:text-indigo-600 transition"
               >
                 <FaUserPlus size={20} />
                 <span className="ml-2">Register</span>
               </Link>
             </div>
           )}
-
-          <Link to="/cart" className="hover:text-yellow-300 transition">
-            <FaShoppingCart size={24} />
-          </Link>
         </div>
 
         {/* Mobile Menu Button */}
         <button
-          className="text-white md:hidden focus:outline-none"
+          className="text-indigo-600 md:hidden focus:outline-none"
           onClick={() => setMenuOpen(!menuOpen)}
         >
           <FaBars size={26} />
@@ -104,73 +131,84 @@ const Navbar = () => {
 
       {/* Mobile Dropdown Menu */}
       {menuOpen && (
-        <div className="md:hidden bg-indigo-500 p-4 space-y-4 text-white text-lg">
+        <div className="md:hidden bg-gray-100 p-4 space-y-4 text-gray-700 text-lg">
+          <form
+            onSubmit={handleSearch}
+            className="flex items-center bg-white rounded-full px-4 py-2 shadow-sm"
+          >
+            <input
+              type="text"
+              placeholder="Search products..."
+              className="bg-transparent focus:outline-none w-full text-sm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <button type="submit" className="text-indigo-600">
+              <FaSearch />
+            </button>
+          </form>
+
           <Link
             to="/"
-            className="block hover:text-yellow-300"
+            className="block hover:text-indigo-600"
             onClick={() => setMenuOpen(false)}
           >
             Home
           </Link>
           <Link
             to="/shop"
-            className="block hover:text-yellow-300"
+            className="block hover:text-indigo-600"
             onClick={() => setMenuOpen(false)}
           >
             Shop
           </Link>
           <Link
             to="/about"
-            className="block hover:text-yellow-300"
+            className="block hover:text-indigo-600"
             onClick={() => setMenuOpen(false)}
           >
             About
           </Link>
           <Link
             to="/contact"
-            className="block hover:text-yellow-300"
+            className="block hover:text-indigo-600"
             onClick={() => setMenuOpen(false)}
           >
             Contact
           </Link>
 
           {user ? (
-            <div className="flex items-center space-x-2">
-              <Link
-                to="/dashboard"
-                className="ml-2 hover:text-yellow-300"
-                onClick={() => setMenuOpen(false)}
-              >
-                Profile
-              </Link>
-            </div>
+            <Link
+              to="/dashboard"
+              className="block hover:text-indigo-600"
+              onClick={() => setMenuOpen(false)}
+            >
+              Profile
+            </Link>
           ) : (
-            <div className="space-y-2">
+            <>
               <Link
                 to="/login"
-                className="flex items-center hover:text-yellow-300"
+                className="block hover:text-indigo-600"
                 onClick={() => setMenuOpen(false)}
               >
-                <FaSignInAlt size={20} className="mr-2" />
                 Login
               </Link>
               <Link
                 to="/register"
-                className="flex items-center hover:text-yellow-300"
+                className="block hover:text-indigo-600"
                 onClick={() => setMenuOpen(false)}
               >
-                <FaUserPlus size={20} className="mr-2" />
                 Register
               </Link>
-            </div>
+            </>
           )}
 
           <Link
             to="/cart"
-            className="flex items-center hover:text-yellow-300"
+            className="block hover:text-indigo-600"
             onClick={() => setMenuOpen(false)}
           >
-            <FaShoppingCart size={24} className="mr-2" />
             Cart
           </Link>
         </div>
