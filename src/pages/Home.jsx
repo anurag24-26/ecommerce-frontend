@@ -51,28 +51,29 @@ const Home = () => {
               <Link to={`/product/${product._id}`} key={product._id}>
                 <div className="bg-white bg-opacity-90 backdrop-blur-lg p-6 rounded-xl shadow-lg hover:shadow-2xl transition transform hover:scale-105 cursor-pointer">
                   <div className="relative overflow-hidden rounded-lg">
+                    {/* ✅ Keeps earlier logic for single images while incorporating schema changes */}
                     <img
                       src={
-                        product.image?.startsWith("https")
+                        product.image?.startsWith("https") // ✅ Earlier logic (single image support)
                           ? product.image
+                          : product.images?.length > 0 // ✅ New schema logic (multiple images)
+                          ? product.images[0] // Show first image if multiple exist
                           : "https://via.placeholder.com/150"
                       }
                       alt={product.name}
                       className="w-full h-52 object-cover rounded-md hover:scale-105 transition duration-300"
                     />
-                    <div className="absolute top-2 left-2 bg-indigo-500 text-white px-3 py-1 text-sm rounded-full">
-                      New Arrival
-                    </div>
+
+                    {/* Indicate more images if available */}
+                    {product.images?.length > 1 && (
+                      <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
+                        +{product.images.length - 1} More
+                      </div>
+                    )}
                   </div>
-                  <h2 className="text-2xl font-bold mt-4 text-gray-800">
-                    {product.name}
-                  </h2>
-                  <p className="text-gray-500 text-sm">
-                    {product.brand} | {product.category}
-                  </p>
-                  <p className="text-3xl font-extrabold text-indigo-600 mt-2">
-                    ₹{product.price}
-                  </p>
+                  <h2 className="text-2xl font-bold mt-4 text-gray-800">{product.name}</h2>
+                  <p className="text-gray-500 text-sm">{product.brand} | {product.category}</p>
+                  <p className="text-3xl font-extrabold text-indigo-600 mt-2">₹{product.price}</p>
                 </div>
               </Link>
             ))
