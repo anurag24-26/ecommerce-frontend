@@ -10,6 +10,8 @@ import SearchPage from "./pages/SearchPage";
 import Shop from "./pages/Shop";
 import Contact from "./pages/Contact";
 import About from "./pages/About";
+import WishlistPage from "./pages/WishlistPage"; // <-- Import WishlistPage
+
 function App() {
   return (
     <BrowserRouter>
@@ -17,13 +19,13 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/cart" element={<CartPage />} />
+        <Route path="/wishlist" element={<WishlistPage />} /> {/* Added wishlist route */}
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/product/:id" element={<Info />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<About />} />
-        {/* Add a route for the admin dashboard */}
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/register" element={<Register />} />
       </Routes>

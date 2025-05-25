@@ -7,9 +7,10 @@ import {
   FaUserPlus,
   FaBars,
   FaSearch,
+  FaHeart,      // <-- import wishlist icon
 } from "react-icons/fa";
 import axios from "axios";
-import logo from "../assets/logo.png"; // Your logo image
+import logo from "../assets/logo.png";
 
 const Navbar = () => {
   const [user, setUser] = useState(null);
@@ -33,7 +34,7 @@ const Navbar = () => {
     if (searchTerm.trim()) {
       navigate(`/search?query=${searchTerm}`);
       setSearchTerm("");
-      setMenuOpen(false); // Close menu if mobile
+      setMenuOpen(false);
     }
   };
 
@@ -86,6 +87,12 @@ const Navbar = () => {
           <Link to="/contact" className="hover:text-indigo-600 transition">
             Contact
           </Link>
+
+          {/* Wishlist link */}
+          <Link to="/wishlist" className="hover:text-indigo-600 transition">
+            <FaHeart size={24} />
+          </Link>
+
           <Link to="/cart" className="hover:text-indigo-600 transition">
             <FaShoppingCart size={24} />
           </Link>
@@ -175,6 +182,15 @@ const Navbar = () => {
             onClick={() => setMenuOpen(false)}
           >
             Contact
+          </Link>
+
+          {/* Wishlist mobile */}
+          <Link
+            to="/wishlist"
+            className="block hover:text-indigo-600"
+            onClick={() => setMenuOpen(false)}
+          >
+            Wishlist
           </Link>
 
           {user ? (

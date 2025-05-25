@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import API from "../utils/api";
 import Navbar from "../components/Navbar";
 import CartButton from "../components/CartButton";
+import WishlistButton from "../components/WishlistButton";  // <--- Import WishlistButton
 
 const Info = () => {
   const { id } = useParams();
@@ -100,6 +101,7 @@ const Info = () => {
                   🚀 Order Now
                 </button>
                 <CartButton product={product} />
+                <WishlistButton product={product} />  {/* <--- Added WishlistButton here */}
               </div>
             </div>
           </div>
