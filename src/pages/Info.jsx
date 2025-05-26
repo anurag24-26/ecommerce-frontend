@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import API from "../utils/api";
 import Navbar from "../components/Navbar";
 import CartButton from "../components/CartButton";
 import WishlistButton from "../components/WishlistButton";
 
+const API_BASE = "https://ecommerce-backend-h0uj.onrender.com/api";
+
 const Info = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState("");
   const [isZoomed, setIsZoomed] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
@@ -37,12 +38,13 @@ const Info = () => {
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
-        const res = await API.get(`/products/${id}`);
-        setProduct(res.data);
+        const res = await fetch(`${API_BASE}/products/${id}`);
+        const data = await res.json();
+        setProduct(data);
         setSelectedImage(
-          res.data.image?.startsWith("https")
-            ? res.data.image
-            : res.data.images?.[0] || "https://via.placeholder.com/150"
+          data.image?.startsWith("https")
+            ? data.image
+            : data.images?.[0] || "https://via.placeholder.com/150"
         );
       } catch (err) {
         console.error("Error fetching product details:", err);
@@ -52,44 +54,50 @@ const Info = () => {
     };
     fetchProductDetails();
   }, [id]);
-
-  const handleReviewSubmit = () => {
+  const handleReviewSubmit = async () => {
     if (rating === 0 || comment.trim() === "") {
       alert("Please provide both a rating and comment.");
       return;
     }
 
-    const newReview = {
-      user: currentUser,
-      rating,
-      comment,
-    };
-
     setSubmittingReview(true);
 
-    setTimeout(() => {
-      setProduct((prev) => ({
-        ...prev,
-        reviews: [newReview, ...(prev.reviews || [])],
-      }));
+    const userToken = localStorage.getItem("userToken"); // ✅ user token only
+
+    if (!userToken) {
+      alert("You must be logged in as a user to submit a review.");
+      setSubmittingReview(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/products/${id}/review`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userToken}`, // ✅ Ensure this is the user token
+        },
+        body: JSON.stringify({ rating, comment }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to submit review");
+      }
+
+      const updatedProduct = await res.json();
+      setProduct(updatedProduct);
       setRating(0);
       setComment("");
-      setSubmittingReview(false);
       alert("✅ Review submitted!");
-    }, 1000);
-  };
-
-  const handleReviewDelete = (indexToRemove) => {
-    if (!window.confirm("Are you sure you want to delete this review?")) return;
-
-    setProduct((prev) => {
-      const updatedReviews = prev.reviews.filter((_, i) => i !== indexToRemove);
-      return { ...prev, reviews: updatedReviews };
-    });
-
-    setTimeout(() => {
-      alert("❌ Review deleted!");
-    }, 500);
+    } catch (err) {
+      console.error("Error submitting review:", err);
+      alert(
+        "❌ Failed to submit review. Make sure you're logged in as a user."
+      );
+    } finally {
+      setSubmittingReview(false);
+    }
   };
 
   return (
@@ -126,17 +134,24 @@ const Info = () => {
 
             {/* Product Details */}
             <div className="md:w-1/2 p-8 flex flex-col justify-center">
-              <h1 className="text-4xl font-bold text-gray-800">{product.name}</h1>
-              <p className="text-gray-600 text-lg mt-2">{product.description}</p>
+              <h1 className="text-4xl font-bold text-gray-800">
+                {product.name}
+              </h1>
+              <p className="text-gray-600 text-lg mt-2">
+                {product.description}
+              </p>
               <div className="mt-4 space-y-2">
                 <p className="text-lg text-gray-700">
                   <span className="font-semibold">Brand:</span> {product.brand}
                 </p>
                 <p className="text-lg text-gray-700">
-                  <span className="font-semibold">Category:</span> {product.category}
+                  <span className="font-semibold">Category:</span>{" "}
+                  {product.category}
                 </p>
               </div>
-              <p className="text-3xl text-indigo-600 font-extrabold mt-6">₹{product.price}</p>
+              <p className="text-3xl text-indigo-600 font-extrabold mt-6">
+                ₹{product.price}
+              </p>
               <p
                 className={`text-lg font-semibold mt-3 ${
                   product.countInStock > 0 ? "text-green-600" : "text-red-500"
@@ -161,11 +176,15 @@ const Info = () => {
 
               {/* Review Section */}
               <div className="mt-8">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">⭐ Add a Review</h2>
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                  ⭐ Add a Review
+                </h2>
 
                 {/* Emoji Rating UI */}
                 <div className="mb-4">
-                  <label className="block text-gray-700 font-semibold mb-1">Rating:</label>
+                  <label className="block text-gray-700 font-semibold mb-1">
+                    Rating:
+                  </label>
                   <div className="flex gap-4 mb-2">
                     {[1, 2, 3, 4, 5].map((r) => (
                       <button
@@ -173,7 +192,9 @@ const Info = () => {
                         type="button"
                         onClick={() => setRating(r)}
                         className={`flex flex-col items-center text-xl p-2 rounded-lg transition duration-200 ${
-                          rating === r ? "bg-yellow-100 scale-110" : "hover:bg-gray-100"
+                          rating === r
+                            ? "bg-yellow-100 scale-110"
+                            : "hover:bg-gray-100"
                         }`}
                       >
                         <span>{emojiMap[r]}</span>
@@ -185,7 +206,9 @@ const Info = () => {
 
                 {/* Comment Box */}
                 <div className="mb-4">
-                  <label className="block text-gray-700 font-semibold mb-1">Comment:</label>
+                  <label className="block text-gray-700 font-semibold mb-1">
+                    Comment:
+                  </label>
                   <textarea
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
@@ -206,7 +229,9 @@ const Info = () => {
               {/* Review List */}
               {product.reviews && product.reviews.length > 0 && (
                 <div className="mt-8">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-4">📝 Reviews</h2>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                    📝 Reviews
+                  </h2>
                   <div className="space-y-4">
                     {product.reviews.map((rev, idx) => (
                       <div
@@ -215,7 +240,9 @@ const Info = () => {
                       >
                         <div className="flex justify-between items-center mb-1">
                           <div>
-                            <p className="font-semibold">{rev.user || "User"}</p>
+                            <p className="font-semibold">
+                              {rev.user?.name || "User"}
+                            </p>
                             <p className="text-2xl">
                               {emojiMap[rev.rating] || "⭐"}{" "}
                               <span className="text-gray-600 text-sm">
@@ -223,15 +250,7 @@ const Info = () => {
                               </span>
                             </p>
                           </div>
-                          {rev.user === currentUser && (
-                            <button
-                              onClick={() => handleReviewDelete(idx)}
-                              className="text-red-600 hover:text-red-800 font-bold text-sm"
-                              title="Delete Review"
-                            >
-                              ❌
-                            </button>
-                          )}
+                          {/* Optionally, add delete functionality here if needed */}
                         </div>
                         <p className="text-gray-700">{rev.comment}</p>
                       </div>
