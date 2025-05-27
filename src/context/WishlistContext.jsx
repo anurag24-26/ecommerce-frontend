@@ -19,7 +19,7 @@ export const WishlistProvider = ({ children }) => {
   // Add product to wishlist
   const addToWishlist = (product) => {
     setWishlist((prevWishlist) => {
-      const exists = prevWishlist.find((item) => item._id === product._id);
+      const exists = prevWishlist.find((item) => item.id === product.id);
       if (exists) {
         // If product already in wishlist, do nothing (or you can show a message)
         return prevWishlist;

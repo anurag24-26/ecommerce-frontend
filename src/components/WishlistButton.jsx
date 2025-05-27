@@ -6,8 +6,8 @@ const WishlistButton = ({ product }) => {
   const [message, setMessage] = useState("");
 
   const handleAddToWishlist = () => {
-    // Check if product already in wishlist by id or unique identifier
-    const exists = wishlist.some(item => item.id === product.id);
+    // Use _id for uniqueness check, same as context
+    const exists = wishlist.some((item) => item.id === product.id);
 
     if (exists) {
       setMessage("❌ Item already exists in wishlist");
@@ -21,7 +21,6 @@ const WishlistButton = ({ product }) => {
       }
     }
 
-    // Clear message after 2 seconds
     setTimeout(() => setMessage(""), 2000);
   };
 
@@ -34,7 +33,6 @@ const WishlistButton = ({ product }) => {
         ❤️ Add to Wishlist
       </button>
 
-      {/* Show success or error message */}
       {message && (
         <p
           className={`mt-2 text-center text-sm font-medium ${

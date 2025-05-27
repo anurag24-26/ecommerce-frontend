@@ -64,17 +64,19 @@ const Home = () => {
               <Link to={`/product/${product._id}`} key={product._id}>
                 <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition transform hover:scale-105 p-4 cursor-pointer">
                   <div className="relative overflow-hidden rounded-lg">
-                    <img
-                      src={
-                        product.image?.startsWith("https")
-                          ? product.image
-                          : product.images?.length > 0
-                          ? product.images[0]
-                          : "https://via.placeholder.com/150"
-                      }
-                      alt={product.name}
-                      className="w-full h-48 object-cover rounded-md hover:scale-105 transition duration-300"
-                    />
+                    <div className="w-full aspect-[4/3] bg-white rounded-md overflow-hidden flex items-center justify-center">
+                      <img
+                        src={
+                          product.image?.startsWith("https")
+                            ? product.image
+                            : product.images?.length > 0
+                            ? product.images[0]
+                            : "https://via.placeholder.com/150"
+                        }
+                        alt={product.name}
+                        className="w-full h-full object-contain transition-transform duration-300 hover:scale-105"
+                      />
+                    </div>
 
                     {/* New Arrival Badge */}
                     {isNewArrival(product.createdAt) && (
