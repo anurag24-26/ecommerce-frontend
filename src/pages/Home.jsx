@@ -42,6 +42,13 @@ const Home = () => {
     return diffDays <= 2;
   };
 
+  // Calculate average rating
+  const getAverageRating = (reviews) => {
+    if (!reviews || reviews.length === 0) return 0;
+    const total = reviews.reduce((acc, r) => acc + r.rating, 0);
+    return total / reviews.length;
+  };
+
   return (
     <>
       <Navbar />
@@ -60,51 +67,72 @@ const Home = () => {
               🚀 Loading products...
             </p>
           ) : products.length > 0 ? (
-            products.map((product) => (
-              <Link to={`/product/${product._id}`} key={product._id}>
-                <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition transform hover:scale-105 p-4 cursor-pointer">
-                  <div className="relative overflow-hidden rounded-lg">
-                    <div className="w-full aspect-[4/3] bg-white rounded-md overflow-hidden flex items-center justify-center">
-                      <img
-                        src={
-                          product.image?.startsWith("https")
-                            ? product.image
-                            : product.images?.length > 0
-                            ? product.images[0]
-                            : "https://via.placeholder.com/150"
-                        }
-                        alt={product.name}
-                        className="w-full h-full object-contain transition-transform duration-300 hover:scale-105"
-                      />
+            products.map((product) => {
+              const avgRating = getAverageRating(product.reviews);
+              return (
+                <Link to={`/product/${product._id}`} key={product._id}>
+                  <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition transform hover:scale-105 p-4 cursor-pointer">
+                    <div className="relative overflow-hidden rounded-lg">
+                      <div className="w-full aspect-[4/3] bg-white rounded-md overflow-hidden flex items-center justify-center">
+                        <img
+                          src={
+                            product.image?.startsWith("https")
+                              ? product.image
+                              : product.images?.length > 0
+                              ? product.images[0]
+                              : "https://via.placeholder.com/150"
+                          }
+                          alt={product.name}
+                          className="w-full h-full object-contain transition-transform duration-300 hover:scale-105"
+                        />
+                      </div>
+
+                      {/* New Arrival Badge */}
+                      {isNewArrival(product.createdAt) && (
+                        <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 text-xs rounded-full shadow-md">
+                          New Arrival 🚀
+                        </div>
+                      )}
+
+                      {/* +More Images Badge */}
+                      {product.images?.length > 1 && (
+                        <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
+                          +{product.images.length - 1} More
+                        </div>
+                      )}
                     </div>
 
-                    {/* New Arrival Badge */}
-                    {isNewArrival(product.createdAt) && (
-                      <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 text-xs rounded-full shadow-md">
-                        New Arrival 🚀
+                    <h2 className="text-lg font-bold mt-4 text-gray-800 truncate">
+                      {product.name}
+                    </h2>
+                    <p className="text-gray-500 text-sm mt-1">
+                      {product.brand} | {product.category}
+                    </p>
+
+                    {/* Review Section */}
+                    {product.reviews?.length > 0 ? (
+                      <div className="mt-2 flex items-center text-sm text-yellow-500 gap-1">
+                        <span>
+                          {"★".repeat(Math.round(avgRating))}
+                          {"☆".repeat(5 - Math.round(avgRating))}
+                        </span>
+                        <span className="text-gray-500 ml-1 text-xs">
+                          ({product.reviews.length} reviews)
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="mt-2 text-sm text-gray-400 italic">
+                        No reviews yet
                       </div>
                     )}
 
-                    {/* +More Images Badge */}
-                    {product.images?.length > 1 && (
-                      <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
-                        +{product.images.length - 1} More
-                      </div>
-                    )}
+                    <p className="text-indigo-600 font-extrabold text-xl mt-2">
+                      ₹{product.price}
+                    </p>
                   </div>
-
-                  <h2 className="text-lg font-bold mt-4 text-gray-800 truncate">
-                    {product.name}
-                  </h2>
-                  <p className="text-gray-500 text-sm mt-1">
-                    {product.brand} | {product.category}
-                  </p>
-                  <p className="text-indigo-600 font-extrabold text-xl mt-2">
-                    ₹{product.price}
-                  </p>
-                </div>
-              </Link>
-            ))
+                </Link>
+              );
+            })
           ) : (
             <p className="col-span-3 text-center text-gray-600 text-lg">
               ❌ No products available
