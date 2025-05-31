@@ -1,48 +1,28 @@
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import WishlistContext from "../context/WishlistContext";
 
 const WishlistButton = ({ product }) => {
-  const { wishlist, addToWishlist } = useContext(WishlistContext);
-  const [message, setMessage] = useState("");
+  const { wishlist, addToWishlist, removeFromWishlist } = useContext(WishlistContext);
 
-  const handleAddToWishlist = () => {
-    // Use _id for uniqueness check, same as context
-    const exists = wishlist.some((item) => item.id === product.id);
+  const isInWishlist = wishlist.some((item) => item._id === product._id);
 
-    if (exists) {
-      setMessage("❌ Item already exists in wishlist");
+  const handleClick = () => {
+    if (isInWishlist) {
+      removeFromWishlist(product._id);
     } else {
-      try {
-        addToWishlist(product);
-        setMessage("✅ Added to wishlist successfully!");
-      } catch (error) {
-        console.error(error);
-        setMessage("❌ Failed to add to wishlist.");
-      }
+      addToWishlist(product);
     }
-
-    setTimeout(() => setMessage(""), 2000);
   };
 
   return (
-    <div className="w-full">
-      <button
-        onClick={handleAddToWishlist}
-        className="mt-4 w-60 bg-pink-600 text-white py-2 rounded-lg font-semibold hover:bg-pink-700 transition duration-300"
-      >
-        ❤️ Add to Wishlist
-      </button>
-
-      {message && (
-        <p
-          className={`mt-2 text-center text-sm font-medium ${
-            message.startsWith("✅") ? "text-green-600" : "text-red-500"
-          }`}
-        >
-          {message}
-        </p>
-      )}
-    </div>
+    <button
+      onClick={handleClick}
+      className={`${
+        isInWishlist ? "bg-red-500" : "bg-indigo-500"
+      } text-white w-60 py-2 rounded-lg font-semibold hover:opacity-90 transition`}
+    >
+      {isInWishlist ? "💔 Remove from Wishlist" : "❤️ Add to Wishlist"}
+    </button>
   );
 };
 

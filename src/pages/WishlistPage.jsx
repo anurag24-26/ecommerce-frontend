@@ -20,44 +20,48 @@ const WishlistPage = () => {
               Your wishlist is empty.
             </p>
           ) : (
-            <div className="space-y-6">
-              {wishlist.map((product) => (
-                <div
-                  key={product._id}
-                  className="flex items-center justify-between bg-gray-100 p-4 rounded-lg shadow-md hover:shadow-lg transition"
-                >
-                  {/* Product Image & Link */}
-                  <Link
-                    to={`/product/${product._id}`}
-                    className="flex items-center space-x-4"
+            <>
+              <div className="space-y-6">
+                {wishlist.map((product) => (
+                  <div
+                    key={product._id}
+                    className="flex items-center justify-between bg-gray-100 p-4 rounded-lg shadow-md hover:shadow-lg transition"
                   >
-                    <img
-                      src={
-                        product.images?.[0] ||
-                        product.image ||
-                        "https://via.placeholder.com/150"
-                      }
-                      alt={product.name}
-                      className="w-20 h-20 object-cover rounded-md border hover:border-purple-600 transition"
-                    />
-                    <div>
-                      <h2 className="text-lg font-bold text-gray-800">
-                        {product.name}
-                      </h2>
-                      <p className="text-gray-600 text-sm">₹{product.price}</p>
-                    </div>
-                  </Link>
+                    {/* Product Image & Link */}
+                    <Link
+                      to={`/product/${product._id}`}
+                      className="flex items-center space-x-4"
+                    >
+                      <img
+                        src={
+                          product.images?.[0] ||
+                          product.image ||
+                          "https://via.placeholder.com/150"
+                        }
+                        alt={product.name || "Wishlist Product"}
+                        className="w-20 h-20 object-cover rounded-md border hover:border-purple-600 transition"
+                      />
+                      <div>
+                        <h2 className="text-lg font-bold text-gray-800">
+                          {product.name}
+                        </h2>
+                        <p className="text-gray-600 text-sm">
+                          ₹{product.price.toFixed(2)}
+                        </p>
+                      </div>
+                    </Link>
 
-                  {/* Remove Button */}
-                  <button
-                    onClick={() => removeFromWishlist(product._id)}
-                    className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
-                  >
-                    ❌ Remove
-                  </button>
-                </div>
-              ))}
-            </div>
+                    {/* Remove Button */}
+                    <button
+                      onClick={() => removeFromWishlist(product._id)}
+                      className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition"
+                    >
+                      ❌ Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       </div>
