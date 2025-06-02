@@ -1,135 +1,163 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import API from "../utils/api";
 import Navbar from "../components/Navbar";
 import CartButton from "../components/CartButton";
 import WishlistButton from "../components/WishlistButton";
 
-const ratingDescriptions = {
-  1: { emoji: "😞", text: "Very Poor" },
-  2: { emoji: "😐", text: "Poor" },
-  3: { emoji: "😊", text: "Average" },
-  4: { emoji: "👍", text: "Good" },
-  5: { emoji: "🤩", text: "Excellent" },
-};
+const API_BASE = "https://ecommerce-backend-h0uj.onrender.com/api";
 
 const Info = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState("");
   const [isZoomed, setIsZoomed] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Rating & Review States
   const [rating, setRating] = useState(0);
-  const [hoverRating, setHoverRating] = useState(0);
-  const [review, setReview] = useState("");
-  const [reviewsList, setReviewsList] = useState([]);
+  const [comment, setComment] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
+
+  const emojiMap = {
+    1: "😢",
+    2: "😔",
+    3: "😐",
+    4: "😊",
+    5: "😄",
+  };
+
+  const labelMap = {
+    1: "Poor",
+    2: "Below avg",
+    3: "Average",
+    4: "Good",
+    5: "Impressive",
+  };
 
   useEffect(() => {
     const fetchProductDetails = async () => {
+      setLoading(true);
       try {
-        const res = await API.get(`/products/${id}`);
-        const data = res.data;
+        const res = await fetch(`${API_BASE}/products/${id}`);
+        if (!res.ok) {
+          throw new Error("Failed to fetch product");
+        }
+        const data = await res.json();
         setProduct(data);
         setSelectedImage(
           data.image?.startsWith("https")
             ? data.image
-            : data.images?.[0] || "https://via.placeholder.com/150"
+            : data.images?.[0] || "https://via.placeholder.com/400"
         );
       } catch (err) {
         console.error("Error fetching product details:", err);
+        setProduct(null);
       } finally {
         setLoading(false);
       }
     };
-    fetchProductDetails();
+    if (id) fetchProductDetails();
   }, [id]);
 
-  // Submit Review Handler
-  const handleSubmitReview = () => {
-    if (rating === 0 || !review.trim()) {
-      alert("Please provide both a rating and a review.");
+  const handleReviewSubmit = async () => {
+    if (rating === 0 || comment.trim() === "") {
+      alert("Please provide both a rating and comment.");
       return;
     }
-    const newReview = {
-      id: Date.now(),
-      rating,
-      review: review.trim(),
-      date: new Date().toLocaleDateString(),
-    };
-    setReviewsList([newReview, ...reviewsList]);
-    setRating(0);
-    setReview("");
-    setHoverRating(0);
-    alert("🎉 Thanks for your review!");
+
+    setSubmittingReview(true);
+
+    const userToken = localStorage.getItem("userToken");
+
+    if (!userToken) {
+      alert("You must be logged in as a user to submit a review.");
+      setSubmittingReview(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/products/${id}/review`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userToken}`,
+        },
+        body: JSON.stringify({ rating, comment }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to submit review");
+      }
+
+      const updatedProduct = await res.json();
+      setProduct(updatedProduct);
+      setRating(0);
+      setComment("");
+      alert("✅ Review submitted!");
+    } catch (err) {
+      console.error("Error submitting review:", err);
+      alert(
+        "❌ Failed to submit review. Make sure you're logged in as a user."
+      );
+    } finally {
+      setSubmittingReview(false);
+    }
   };
 
   return (
     <>
       <Navbar />
-
-      <main className="relative min-h-screen bg-gray-100 p-6 sm:p-12 flex items-center justify-center">
+      <div className="relative min-h-screen bg-gray-100 p-6 sm:p-12 flex items-center justify-center">
         {loading ? (
-          <p className="text-center text-indigo-600 text-xl animate-pulse">
+          <p className="text-center text-gray-700 text-xl animate-pulse">
             Loading product...
           </p>
         ) : product ? (
-          <section className="bg-white rounded-3xl shadow-2xl overflow-hidden max-w-6xl w-full flex flex-col md:flex-row">
+          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden max-w-6xl w-full flex flex-col md:flex-row">
             {/* Product Image */}
             <div className="md:w-1/2 p-6 flex flex-col items-center justify-center">
               <img
                 src={selectedImage}
                 alt={product.name}
-                className="w-full h-[400px] object-cover rounded-2xl cursor-pointer transition-transform hover:scale-105"
+                className="w-full h-[400px] object-cover rounded-2xl cursor-pointer transition-all hover:scale-105"
                 onClick={() => setIsZoomed(true)}
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") setIsZoomed(true);
-                }}
               />
-
-              {/* Thumbnails */}
               <div className="flex gap-3 mt-4 overflow-x-auto scrollbar-hide">
                 {product.images?.length > 0 &&
-                  product.images.map((img, i) => {
-                    const isSelected = selectedImage === img;
-                    return (
-                      <img
-                        key={i}
-                        src={img}
-                        alt={`${product.name} thumbnail ${i + 1}`}
-                        onClick={() => setSelectedImage(img)}
-                        className={`w-16 h-16 rounded-lg object-cover cursor-pointer border-2 transition
-                          ${isSelected ? "border-indigo-600" : "border-transparent hover:border-indigo-500"}`}
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") setSelectedImage(img);
-                        }}
-                      />
-                    );
-                  })}
+                  product.images.map((img, i) => (
+                    <img
+                      key={i}
+                      src={img}
+                      alt={`Thumbnail ${i}`}
+                      onClick={() => setSelectedImage(img)}
+                      className={`w-16 h-16 rounded-lg object-cover cursor-pointer border-2 transition ${
+                        selectedImage === img
+                          ? "border-indigo-500"
+                          : "border-transparent hover:border-indigo-300"
+                      }`}
+                    />
+                  ))}
               </div>
             </div>
 
             {/* Product Details */}
             <div className="md:w-1/2 p-8 flex flex-col justify-center">
-              <h1 className="text-4xl font-bold text-gray-800">{product.name}</h1>
+              <h1 className="text-4xl font-bold text-gray-800">
+                {product.name}
+              </h1>
               <p className="text-gray-600 text-lg mt-2">{product.description}</p>
-
               <div className="mt-4 space-y-2">
                 <p className="text-lg text-gray-700">
                   <span className="font-semibold">Brand:</span> {product.brand}
                 </p>
                 <p className="text-lg text-gray-700">
-                  <span className="font-semibold">Category:</span> {product.category}
+                  <span className="font-semibold">Category:</span>{" "}
+                  {product.category}
                 </p>
               </div>
-
               <p className="text-3xl text-indigo-600 font-extrabold mt-6">
                 ₹{product.price}
               </p>
-
               <p
                 className={`text-lg font-semibold mt-3 ${
                   product.countInStock > 0 ? "text-green-600" : "text-red-500"
@@ -140,127 +168,119 @@ const Info = () => {
                   : "Out of Stock"}
               </p>
 
-              {/* Rating & Review Section */}
-              <div className="mt-6">
-                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                  🌟 Rate this product:
-                </h3>
-
-                <div className="flex gap-4 mt-3 select-none">
-                  {[1, 2, 3, 4, 5].map((num) => {
-                    const filled =
-                      hoverRating >= num || (!hoverRating && rating >= num);
-                    return (
-                      <div
-                        key={num}
-                        onClick={() => setRating(num)}
-                        onMouseEnter={() => setHoverRating(num)}
-                        onMouseLeave={() => setHoverRating(0)}
-                        className={`cursor-pointer text-4xl transition-transform ${
-                          filled ? "scale-110" : "scale-90"
-                        }`}
-                        aria-label={`${num} star${num > 1 ? "s" : ""}`}
-                        role="button"
-                        tabIndex={0}
-                        onKeyPress={(e) => {
-                          if (e.key === "Enter") setRating(num);
-                        }}
-                      >
-                        {ratingDescriptions[num].emoji}
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <p className="mt-1 text-indigo-600 font-semibold min-h-[1.5rem]">
-                  {hoverRating
-                    ? ratingDescriptions[hoverRating].text
-                    : rating
-                    ? ratingDescriptions[rating].text
-                    : "Select a rating"}
-                </p>
-
-                <textarea
-                  placeholder="📝 Share your thoughts..."
-                  className="w-full mt-4 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                  rows={3}
-                  value={review}
-                  onChange={(e) => setReview(e.target.value)}
-                />
-
+              {/* Button Row */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start flex-wrap gap-4 mt-6">
                 <button
-                  onClick={handleSubmitReview}
-                  disabled={rating === 0 || !review.trim()}
-                  className={`mt-3 py-2 px-4 rounded-lg font-semibold transition ${
-                    rating === 0 || !review.trim()
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-indigo-600 hover:bg-indigo-700 text-white"
-                  }`}
-                >
-                  ✍️ Submit Review
-                </button>
-              </div>
-
-              {/* Display submitted reviews */}
-              {reviewsList.length > 0 && (
-                <section className="mt-8 max-h-64 overflow-y-auto border-t border-gray-300 pt-4">
-                  <h4 className="text-xl font-semibold mb-3 text-gray-700">
-                    User Reviews ({reviewsList.length})
-                  </h4>
-                  <ul className="space-y-4">
-                    {reviewsList.map(({ id, rating, review, date }) => (
-                      <li
-                        key={id}
-                        className="bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200"
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-2xl">
-                            {ratingDescriptions[rating].emoji}
-                          </span>
-                          <span className="font-semibold text-indigo-600">
-                            {ratingDescriptions[rating].text}
-                          </span>
-                          <time className="ml-auto text-sm text-gray-500" dateTime={new Date(date).toISOString()}>
-                            {date}
-                          </time>
-                        </div>
-                        <p className="text-gray-700">{review}</p>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              )}
-
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 mt-6">
-                <button
-                  onClick={() => alert("🚀 Order Now functionality coming soon!")}
-                  className="bg-green-500 w-60 text-white py-2 rounded-lg font-semibold hover:bg-green-600 transition"
+                  onClick={() => alert("Order Now functionality coming soon!")}
+                  className="bg-green-500 text-white py-2 px-6 rounded-lg font-semibold hover:bg-green-700 transition duration-300"
+                  disabled={product.countInStock === 0}
                 >
                   🚀 Order Now
                 </button>
-
                 <CartButton product={product} />
                 <WishlistButton product={product} />
               </div>
+
+              {/* Review Section */}
+              <div className="mt-8">
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                  ⭐ Add a Review
+                </h2>
+
+                {/* Emoji Rating UI */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-semibold mb-1">
+                    Rating:
+                  </label>
+                  <div className="flex gap-4 mb-2">
+                    {[1, 2, 3, 4, 5].map((r) => (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => setRating(r)}
+                        className={`flex flex-col items-center text-xl p-2 rounded-lg transition duration-200 ${
+                          rating === r
+                            ? "bg-yellow-100 scale-110"
+                            : "hover:bg-gray-100"
+                        }`}
+                      >
+                        <span>{emojiMap[r]}</span>
+                        <span className="text-sm">{labelMap[r]}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Comment Box */}
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-semibold mb-1">
+                    Comment:
+                  </label>
+                  <textarea
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    className="border rounded px-3 py-2 w-full resize-none"
+                    rows={4}
+                    placeholder="Write your review here..."
+                    disabled={submittingReview}
+                  />
+                </div>
+                <button
+                  onClick={handleReviewSubmit}
+                  disabled={submittingReview}
+                  className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {submittingReview ? "Submitting..." : "Submit Review"}
+                </button>
+              </div>
+
+              {/* Review List */}
+              {product.reviews && product.reviews.length > 0 && (
+                <div className="mt-8">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                    📝 Reviews
+                  </h2>
+                  <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                    {product.reviews.map((rev, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-gray-100 p-4 rounded-xl shadow-md border border-gray-200"
+                      >
+                        <div className="flex justify-between items-center mb-1">
+                          <div>
+                            <p className="font-semibold">
+                              {rev.user?.name || "User"}
+                            </p>
+                            <p className="text-2xl">
+                              {emojiMap[rev.rating] || "⭐"}{" "}
+                              <span className="text-gray-600 text-sm">
+                                ({rev.rating}/5)
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                        <p className="text-gray-700 whitespace-pre-line">
+                          {rev.comment}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          </section>
+          </div>
         ) : (
-          <div className="text-center text-red-500 text-xl">❌ Product not found</div>
+          <div className="text-gray-700 text-center">
+            <p className="text-2xl">❌ Product not found</p>
+          </div>
         )}
-      </main>
+      </div>
 
       {/* Zoom Modal */}
       {isZoomed && (
         <div
           className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4"
           onClick={() => setIsZoomed(false)}
-          role="dialog"
-          aria-modal="true"
-          tabIndex={-1}
-          onKeyDown={(e) => {
-            if (e.key === "Escape") setIsZoomed(false);
-          }}
         >
           <div className="relative" onClick={(e) => e.stopPropagation()}>
             <img
@@ -269,7 +289,7 @@ const Info = () => {
               className="max-h-[90vh] max-w-full object-contain rounded-lg shadow-lg"
             />
             <button
-              className="absolute top-2 right-2 text-white text-4xl focus:outline-none"
+              className="absolute top-2 right-2 text-white text-4xl"
               onClick={() => setIsZoomed(false)}
               aria-label="Close zoomed image"
             >
